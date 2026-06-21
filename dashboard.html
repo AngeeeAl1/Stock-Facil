@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Fácil - Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- LOGIN MODAL -->
+<div id="loginModal" class="login-overlay">
+  <div class="login-card">
+    <h1>Stock Fácil</h1>
+    <p>Sistema de control de stock</p>
+    <div class="login-field">
+      <label>Usuario</label>
+      <input type="text" id="loginUser" placeholder="Ingresá tu usuario" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label>Contraseña</label>
+      <input type="password" id="loginPass" placeholder="Ingresá tu contraseña" autocomplete="current-password">
+    </div>
+    <div class="login-error" id="loginError">Usuario o contraseña incorrectos</div>
+    <button class="login-btn" onclick="handleLogin()">Ingresar →</button>
+    <div class="login-hint">
+      Usuario: <strong>admin</strong><br>
+      Contraseña: <strong>1234</strong>
+    </div>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar__brand">
+    <img src="logo.svg" alt="Stock Fácil">
+  </div>
+  <ul class="navbar__nav" id="navMenu">
+    <button class="navbar__link active" onclick="showTemplate('inicio')">Inicio</button>
+    <button class="navbar__link" onclick="showTemplate('productos')">Productos</button>
+    <button class="navbar__link" onclick="showTemplate('ventas')">Ventas</button>
+    <button class="navbar__link" onclick="showTemplate('stock')">Stock</button>
+    <button class="navbar__link logout-btn" onclick="handleLogout()">Logout</button>
+  </ul>
+</nav>
+
+<!-- CONTENEDOR PRINCIPAL -->
+<div class="container">
+
+  <!-- ===== TEMPLATE: INICIO ===== -->
+  <template id="template-inicio" class="template active">
+    <div class="hero">
+      <h1 class="hero__title">Stock Fácil</h1>
+      <p class="hero__subtitle">Sistema de control de stock para pequeños emprendimientos</p>
+      <div class="hero__buttons">
+        <button class="btn btn--primary" onclick="showTemplate('productos')">📦 Ver productos</button>
+        <button class="btn btn--secondary" onclick="showTemplate('ventas')">🛒 Registrar venta</button>
+      </div>
+    </div>
+
+    <section class="info-section">
+      <p class="info-section__text">
+        <strong style="color: #0052CC;">Stock Fácil</strong> es un sistema pensado para pequeños emprendimientos que necesitan organizar sus productos, ventas y stock disponible de una manera simple y ordenada.
+      </p>
+    </section>
+
+    <h2 style="font-size: 1.5rem; color: #001a4d; margin: 40px 0 24px 0;">Funcionalidades principales</h2>
+    <div class="features">
+      <div class="feature-card" onclick="showTemplate('productos')">
+        <img src="productos1.jpg" alt="Productos" class="feature-card__image">
+        <h3 class="feature-card__title">Productos</h3>
+        <p class="feature-card__desc">Gestiona tu catálogo de productos con detalles, precios y stock actualizado.</p>
+      </div>
+      <div class="feature-card" onclick="showTemplate('ventas')">
+        <img src="ventas1.jpg" alt="Ventas" class="feature-card__image">
+        <h3 class="feature-card__title">Ventas</h3>
+        <p class="feature-card__desc">Registra ventas fácilmente y mantén el control de tu negocio en todo momento.</p>
+      </div>
+      <div class="feature-card" onclick="showTemplate('stock')">
+        <img src="stock bajo 1.jpg" alt="Stock Bajo" class="feature-card__image">
+        <h3 class="feature-card__title">Stock Bajo</h3>
+        <p class="feature-card__desc">Recibe alertas de productos con bajo stock para nunca quedarte sin inventario.</p>
+      </div>
+    </div>
+
+    <div class="info-section" style="margin-top: 40px;">
+      <p class="info-section__text">
+        Stock Fácil te ayuda a <strong style="color: #0052CC;">ahorrar tiempo, evitar errores y tomar mejores decisiones</strong> para hacer crecer tu emprendimiento.
+      </p>
+    </div>
+  </template>
+
+  <!-- ===== TEMPLATE: PRODUCTOS ===== -->
+  <template id="template-productos" class="template">
+    <div class="page-header page-header--productos">
+      <h1 class="page-header__title">Productos</h1>
+      <p class="page-header__desc">Administra tu inventario de manera completa</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat__icon">📦</div>
+        <div class="stat__label">Total de productos</div>
+        <div class="stat__value" id="stat-total">24</div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon">✅</div>
+        <div class="stat__label">Activos</div>
+        <div class="stat__value" id="stat-activos">22</div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon">⚠️</div>
+        <div class="stat__label">Bajo stock</div>
+        <div class="stat__value" id="stat-bajo">3</div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon">❌</div>
+        <div class="stat__label">Sin stock</div>
+        <div class="stat__value" id="stat-sin">1</div>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <input type="text" class="search-bar__input" placeholder="🔍 Buscar producto..." id="search-productos" onkeyup="filterTable('tabla-productos')">
+      <select class="search-bar__select" id="filter-categoria" onchange="filterTable('tabla-productos')">
+        <option value="">Todas las categorías</option>
+        <option value="Librería">Librería</option>
+        <option value="Bebidas">Bebidas</option>
+        <option value="Golosinas">Golosinas</option>
+      </select>
+      <button class="search-bar__btn" onclick="openModal('addProduct')">+ Nuevo producto</button>
+    </div>
+
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Categoría</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-productos">
+          <tr>
+            <td><strong>Cuaderno A4</strong></td>
+            <td>Librería</td>
+            <td>$1.200</td>
+            <td>25</td>
+            <td><span class="badge badge--success">Disponible</span></td>
+            <td>
+              <div class="actions">
+                <button class="action-btn" title="Editar" onclick="editProduct(1)">✏️</button>
+                <button class="action-btn" title="Quitar" onclick="deleteProduct(1)">🗑️</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Bolígrafo Azul</strong></td>
+            <td>Librería</td>
+            <td>$300</td>
+            <td>10</td>
+            <td><span class="badge badge--warning">Bajo stock</span></td>
+            <td>
+              <div class="actions">
+                <button class="action-btn" title="Editar" onclick="editProduct(2)">✏️</button>
+                <button class="action-btn" title="Quitar" onclick="deleteProduct(2)">🗑️</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Notas Adhesivas</strong></td>
+            <td>Librería</td>
+            <td>$450</td>
+            <td>0</td>
+            <td><span class="badge badge--danger">Sin stock</span></td>
+            <td>
+              <div class="actions">
+                <button class="action-btn" title="Editar" onclick="editProduct(3)">✏️</button>
+                <button class="action-btn" title="Quitar" onclick="deleteProduct(3)">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip">
+      <div style="display: flex;">
+        <span style="font-size: 1.5rem; margin-right: 12px;">ℹ️</span>
+        <div>
+          <div class="tip__title">Consejo:</div>
+          <div class="tip__text">Mantén tu catálogo de productos actualizado para llevar un mejor control de tu stock y ventas.</div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- ===== TEMPLATE: VENTAS ===== -->
+  <template id="template-ventas" class="template">
+    <div class="page-header page-header--ventas">
+      <h1 class="page-header__title">Ventas</h1>
+      <p class="page-header__desc">Gestiona todas tus ventas realizadas</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat__icon">🛒</div>
+        <div class="stat__label">Total de ventas</div>
+        <div class="stat__value" id="stat-ventas">56</div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon">💵</div>
+        <div class="stat__label">Ingresos</div>
+        <div class="stat__value" id="stat-ingresos">$125K</div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon">📅</div>
+        <div class="stat__label">Hoy</div>
+        <div class="stat__value" id="stat-hoy">5</div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon">📊</div>
+        <div class="stat__label">Promedio</div>
+        <div class="stat__value" id="stat-promedio">$2.2K</div>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <input type="text" class="search-bar__input" placeholder="🔍 Buscar venta..." id="search-ventas" onkeyup="filterTable('tabla-ventas')">
+      <input type="date" class="search-bar__select">
+      <button class="search-bar__btn" onclick="openModal('addVenta')">+ Nueva venta</button>
+    </div>
+
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nº Venta</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Total</th>
+            <th>Pago</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-ventas">
+          <tr>
+            <td><strong>VTA-00056</strong></td>
+            <td>31/05/2024 10:30</td>
+            <td>Consumidor Final</td>
+            <td>$4.550</td>
+            <td>Efectivo</td>
+            <td><span class="badge badge--success">Completada</span></td>
+            <td>
+              <div class="actions">
+                <button class="action-btn" title="Editar" onclick="editVenta(1)">✏️</button>
+                <button class="action-btn" title="Quitar" onclick="deleteVenta(1)">🗑️</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>VTA-00055</strong></td>
+            <td>31/05/2024 09:15</td>
+            <td>María González</td>
+            <td>$2.350</td>
+            <td>Tarjeta débito</td>
+            <td><span class="badge badge--success">Completada</span></td>
+            <td>
+              <div class="actions">
+                <button class="action-btn" title="Editar" onclick="editVenta(2)">✏️</button>
+                <button class="action-btn" title="Quitar" onclick="deleteVenta(2)">🗑️</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>VTA-00054</strong></td>
+            <td>30/05/2024 17:45</td>
+            <td>Juan Pérez</td>
+            <td>$6.800</td>
+            <td>Tarjeta crédito</td>
+            <td><span class="badge badge--success">Completada</span></td>
+            <td>
+              <div class="actions">
+                <button class="action-btn" title="Editar" onclick="editVenta(3)">✏️</button>
+                <button class="action-btn" title="Quitar" onclick="deleteVenta(3)">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip">
+      <div style="display: flex;">
+        <span style="font-size: 1.5rem; margin-right: 12px;">ℹ️</span>
+        <div>
+          <div class="tip__title">Consejo:</div>
+          <div class="tip__text">Revisa tus ventas periódicamente para conocer el rendimiento de tu negocio y tus productos más vendidos.</div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- ===== TEMPLATE: STOCK ===== -->
+  <template id="template-stock" class="template">
+    <div class="page-header page-header--stock">
+      <h1 class="page-header__title">Stock</h1>
+      <p class="page-header__desc">Controla el stock de todos tus productos</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat__icon">📦</div>
+        <div class="stat__label">Total de productos</div>
+        <div class="stat__value" id="stat-total-stock">24</div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon">✅</div>
+        <div class="stat__label">Disponibles</div>
+        <div class="stat__value" id="stat-disponibles">20</div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon">⚠️</div>
+        <div class="stat__label">Bajo stock</div>
+        <div class="stat__value" id="stat-bajo-stock">3</div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon">❌</div>
+        <div class="stat__label">Sin stock</div>
+        <div class="stat__value" id="stat-sin-stock">1</div>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <input type="text" class="search-bar__input" placeholder="🔍 Buscar producto..." id="search-stock" onkeyup="filterTable('tabla-stock')">
+      <select class="search-bar__select" id="filter-estado" onchange="filterTable('tabla-stock')">
+        <option value="">Todos los estados</option>
+        <option value="Disponible">Disponible</option>
+        <option value="Bajo">Bajo stock</option>
+        <option value="Sin">Sin stock</option>
+      </select>
+    </div>
+
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Categoría</th>
+            <th>Stock actual</th>
+            <th>Stock mínimo</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-stock">
+          <tr>
+            <td><strong>Cuaderno A4</strong></td>
+            <td>Librería</td>
+            <td>25</td>
+            <td>10</td>
+            <td><span class="badge badge--success">Disponible</span></td>
+            <td>
+              <div class="actions">
+                <button class="action-btn" title="Editar" onclick="updateStock(1)">✏️</button>
+                <button class="action-btn" title="Quitar" onclick="deleteStock(1)">🗑️</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Bolígrafo Azul</strong></td>
+            <td>Librería</td>
+            <td>10</td>
+            <td>15</td>
+            <td><span class="badge badge--warning">Bajo</span></td>
+            <td>
+              <div class="actions">
+                <button class="action-btn" title="Editar" onclick="updateStock(2)">✏️</button>
+                <button class="action-btn" title="Quitar" onclick="deleteStock(2)">🗑️</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Notas Adhesivas</strong></td>
+            <td>Librería</td>
+            <td>0</td>
+            <td>10</td>
+            <td><span class="badge badge--danger">Sin</span></td>
+            <td>
+              <div class="actions">
+                <button class="action-btn" title="Editar" onclick="updateStock(3)">✏️</button>
+                <button class="action-btn" title="Quitar" onclick="deleteStock(3)">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip">
+      <div style="display: flex;">
+        <span style="font-size: 1.5rem; margin-right: 12px;">ℹ️</span>
+        <div>
+          <div class="tip__title">Consejo:</div>
+          <div class="tip__text">Revisa periódicamente tu stock para evitar faltantes y mantener tu negocio siempre abastecido.</div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+</div>
+
+<!-- MODAL: AGREGAR PRODUCTO -->
+<div class="modal" id="modal-addProduct">
+  <div class="modal__content">
+    <div class="modal__header">Agregar nuevo producto</div>
+    <form id="form-product">
+      <div class="form-group">
+        <label>Nombre del producto</label>
+        <input type="text" placeholder="Ej: Cuaderno A4" required>
+      </div>
+      <div class="form-group">
+        <label>Categoría</label>
+        <select required>
+          <option value="">Seleccionar...</option>
+          <option>Librería</option>
+          <option>Bebidas</option>
+          <option>Golosinas</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Precio ($)</label>
+        <input type="number" placeholder="0.00" step="0.01" required>
+      </div>
+      <div class="form-group">
+        <label>Stock</label>
+        <input type="number" placeholder="0" required>
+      </div>
+      <div class="modal__buttons">
+        <button type="submit" class="btn-save">Guardar</button>
+        <button type="button" class="btn-cancel" onclick="closeModal('addProduct')">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: AGREGAR VENTA -->
+<div class="modal" id="modal-addVenta">
+  <div class="modal__content">
+    <div class="modal__header">Registrar nueva venta</div>
+    <form id="form-venta">
+      <div class="form-group">
+        <label>Cliente</label>
+        <input type="text" placeholder="Nombre del cliente" required>
+      </div>
+      <div class="form-group">
+        <label>Producto</label>
+        <select required>
+          <option value="">Seleccionar...</option>
+          <option>Cuaderno A4</option>
+          <option>Bolígrafo Azul</option>
+          <option>Notas Adhesivas</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Cantidad</label>
+        <input type="number" placeholder="1" required>
+      </div>
+      <div class="form-group">
+        <label>Método de pago</label>
+        <select required>
+          <option>Efectivo</option>
+          <option>Tarjeta débito</option>
+          <option>Tarjeta crédito</option>
+        </select>
+      </div>
+      <div class="modal__buttons">
+        <button type="submit" class="btn-save">Registrar</button>
+        <button type="button" class="btn-cancel" onclick="closeModal('addVenta')">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

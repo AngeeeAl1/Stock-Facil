@@ -1,0 +1,7 @@
+name = "stock-facil"
+compatibility_date = "2024-01-01"
+
+# Configuración para sitio estático
+[site]
+bucket = "."
+include = ["*.html", "*.css", "*.js", "*.svg", "*.jpg", "*.pdf"]
