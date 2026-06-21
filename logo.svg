@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 100">
+  <!-- Caja 3D con estilo mejorado -->
+  <g>
+    <!-- Caja con bordes azules -->
+    <path d="M 30 35 L 80 15 L 130 35 L 80 55 Z" fill="none" stroke="#0052CC" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 30 35 L 30 70 L 80 90 L 80 55 Z" fill="none" stroke="#0052CC" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 80 55 L 80 90 L 130 70 L 130 35 Z" fill="none" stroke="#0052CC" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Cinta/Ribbon decorativo -->
+    <path d="M 40 45 Q 55 30, 70 45" fill="none" stroke="#0052CC" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="70" cy="45" r="1.5" fill="#0052CC"/>
+  </g>
+  
+  <!-- Texto "Stock Fácil" -->
+  <text x="160" y="60" font-family="Arial, sans-serif" font-size="42" font-weight="bold" fill="#001a4d" letter-spacing="1">Stock Fácil</text>
+</svg>
