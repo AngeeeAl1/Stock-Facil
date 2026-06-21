@@ -1,39 +1,31 @@
-import { getAssetFromKV, mapRequestToAsset } from '@cloudflare/kv-asset-handler';
-import manifestJSON from '__STATIC_CONTENT_MANIFEST';
-
-const assetManifest = JSON.parse(manifestJSON);
-const ASSET_NAMESPACE = '__STATIC_CONTENT';
-const ASSET_MANIFEST = assetManifest;
-
 export default {
-  fetch: async (request, env) => {
+  async fetch(request, env) {
     try {
       const url = new URL(request.url);
-      const pathname = url.pathname;
+      let pathname = url.pathname;
 
-      // Si la ruta es raíz, servir dashboard.html
+      // Si acceden a raíz, servir dashboard.html
       if (pathname === '/') {
-        const assetKey = mapRequestToAsset(
-          new Request('https://example.com/dashboard.html')
-        ).url.replace('https://example.com', '');
-        
-        return env.ASSETS.get(assetKey) || new Response('Not found', { status: 404 });
+        pathname = '/dashboard.html';
       }
 
-      const asset = await getAssetFromKV(
-        {
-          request,
-          waitUntil: () => {},
-        },
-        {
-          ASSET_NAMESPACE,
-          ASSET_MANIFEST,
-        }
-      );
+      // Buscar el archivo en los assets
+      const asset = await env.ASSETS.get(pathname.substring(1));
+      
+      if (asset) {
+        return new Response(asset, {
+          headers: {
+            'Content-Type': pathname.endsWith('.html') ? 'text/html; charset=utf-8' : 
+                           pathname.endsWith('.css') ? 'text/css' : 
+                           pathname.endsWith('.js') ? 'text/javascript' : 'application/octet-stream'
+          }
+        });
+      }
 
-      return asset;
-    } catch (e) {
       return new Response('Not found', { status: 404 });
+    } catch (e) {
+      console.error(e);
+      return new Response('Error: ' + e.message, { status: 500 });
     }
   },
 };
