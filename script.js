@@ -1,5 +1,6 @@
 let editingProductId = null;
 let editingVentaId = null;
+let editingStockId = null;
 let productCounter = 4;
 let ventaCounter = 57;
 
@@ -44,7 +45,9 @@ function showTemplate(templateName) {
   document.querySelectorAll('.navbar__link').forEach(link => {
     link.classList.remove('active');
   });
-  event.target.classList.add('active');
+  const activeLink = Array.from(document.querySelectorAll('.navbar__link'))
+    .find(link => link.textContent.trim().toLocaleLowerCase('es') === templateName);
+  if (activeLink) activeLink.classList.add('active');
 }
 
 // Modal functions
@@ -119,13 +122,40 @@ function deleteVenta(id) {
 
 // STOCK
 function updateStock(id) {
-  const cantidad = prompt('Ingrese la nueva cantidad:', '');
-  if (cantidad !== null && cantidad !== '') {
-    const row = document.querySelector(`#tabla-stock tr:nth-child(${id})`);
-    if (row) {
-      row.querySelector('td:nth-child(3)').textContent = cantidad;
-    }
+  const row = document.querySelector(`#tabla-stock tr:nth-child(${id})`);
+  if (!row) return;
+
+  editingStockId = id;
+  openModal('editStock');
+  document.querySelector('#stock-edit-product').textContent = row.querySelector('td:nth-child(1)').textContent.trim();
+  document.querySelector('#stock-edit-quantity').value = row.querySelector('td:nth-child(3)').textContent.trim();
+}
+
+function saveStock(e) {
+  e.preventDefault();
+  const quantity = Number(document.querySelector('#stock-edit-quantity').value);
+  if (!Number.isInteger(quantity) || quantity < 0) return;
+
+  const row = document.querySelector(`#tabla-stock tr:nth-child(${editingStockId})`);
+  if (!row) return;
+
+  const minimum = Number(row.querySelector('td:nth-child(4)').textContent);
+  const badge = row.querySelector('td:nth-child(5) .badge');
+  row.querySelector('td:nth-child(3)').textContent = quantity;
+
+  if (quantity === 0) {
+    badge.className = 'badge badge--danger';
+    badge.textContent = 'Sin';
+  } else if (quantity <= minimum) {
+    badge.className = 'badge badge--warning';
+    badge.textContent = 'Bajo';
+  } else {
+    badge.className = 'badge badge--success';
+    badge.textContent = 'Disponible';
   }
+
+  editingStockId = null;
+  closeModal('editStock');
 }
 
 function deleteStock(id) {
@@ -315,6 +345,7 @@ function updateVentasStats() {
 function attachFormListeners() {
   const formProduct = document.querySelector('#form-product');
   const formVenta = document.querySelector('#form-venta');
+  const formStock = document.querySelector('#form-stock');
   
   if (formProduct) {
     formProduct.removeEventListener('submit', saveProduct);
@@ -323,6 +354,10 @@ function attachFormListeners() {
   if (formVenta) {
     formVenta.removeEventListener('submit', saveVenta);
     formVenta.addEventListener('submit', saveVenta);
+  }
+  if (formStock) {
+    formStock.removeEventListener('submit', saveStock);
+    formStock.addEventListener('submit', saveStock);
   }
 }
 
@@ -339,7 +374,7 @@ function handleLogin() {
 
   // Credenciales
   if (user === 'admin' && pass === '1234') {
-    // Guardar sesi�n
+    // Guardar sesi�n
     sessionStorage.setItem('loggedIn', 'true');
     sessionStorage.setItem('username', user);
     
@@ -352,7 +387,7 @@ function handleLogin() {
 }
 
 function handleLogout() {
-  // Limpiar sesi�n
+  // Limpiar sesi�n
   sessionStorage.removeItem('loggedIn');
   sessionStorage.removeItem('username');
   
@@ -388,3 +423,93 @@ window.addEventListener('load', () => {
     showTemplate('inicio');
   }
 });
+
+// ASISTENTE DE AYUDA
+function initStockBot() {
+  const panel = document.querySelector('#stock-bot-panel');
+  const toggle = document.querySelector('#stock-bot-toggle');
+  const close = document.querySelector('#stock-bot-close');
+  const messages = document.querySelector('#stock-bot-messages');
+  const form = document.querySelector('#stock-bot-form');
+  const input = document.querySelector('#stock-bot-input');
+
+  if (!panel || !toggle || !messages || !form || !input) return;
+
+  const answers = {
+    producto: 'Para agregar un artículo, entrá en Productos y elegí “Nuevo producto”. Completá nombre, categoría, precio y cantidad; luego seleccioná “Guardar”.',
+    venta: 'Para registrar una operación, abrí Ventas, seleccioná “Nueva venta” y completá cliente, producto, cantidad y método de pago. Después presioná “Registrar”.',
+    stock: 'En la sección Stock podés revisar las cantidades y el estado de cada artículo. “Bajo” indica que conviene reponerlo y “Sin” que no quedan unidades.',
+    buscar: 'En Productos o Stock usá el campo de búsqueda para filtrar por nombre. En Productos también podés elegir una categoría.',
+    acceso: 'En esta versión de demostración, el acceso de prueba es usuario “admin” y contraseña “1234”. No uses esas credenciales en un sistema publicado.',
+    ayuda: 'Stock Fácil permite consultar productos, registrar ventas y controlar el inventario de un pequeño emprendimiento. Este asistente responde preguntas frecuentes y no consulta datos reales.'
+  };
+
+  function addMessage(text, sender) {
+    const message = document.createElement('p');
+    message.className = `stock-bot__message stock-bot__message--${sender}`;
+    message.textContent = text;
+    messages.appendChild(message);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function answerQuestion(topic, question) {
+    const normalized = question.toLocaleLowerCase('es')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[¿?¡!.,;:]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    let selectedTopic = topic;
+
+    if (!selectedTopic) {
+      if (/^(hola|buenas|buenos dias|buenas tardes|buenas noches)\b/.test(normalized)) {
+        addMessage('¡Hola! Preguntame sobre productos, ventas, stock, búsquedas o el acceso al sistema y te respondo por acá.', 'bot');
+        return;
+      }
+      if (/^(gracias|muchas gracias|perfecto|listo)$/.test(normalized)) {
+        addMessage('¡De nada! Cuando tengas otra consulta, escribila acá.', 'bot');
+        return;
+      }
+
+      if (/\b(venta|ventas|vender|cliente|pago|pagos|cobrar|operacion|transaccion)\b/.test(normalized)) selectedTopic = 'venta';
+      else if (/\b(stock|inventario|cantidad|reponer|faltante|disponible)\b/.test(normalized)) selectedTopic = 'stock';
+      else if (/\b(buscar|busqueda|filtro|filtrar|categoria|encontrar)\b/.test(normalized)) selectedTopic = 'buscar';
+      else if (/\b(login|acceso|usuario|contrasena|ingresar|clave)\b/.test(normalized)) selectedTopic = 'acceso';
+      else if (/\b(producto|productos|articulo|articulos|agregar|cargar|catalogo|nuevo)\b/.test(normalized)) selectedTopic = 'producto';
+    }
+
+    addMessage(answers[selectedTopic] || 'Todavía no tengo una respuesta para esa consulta. Puedo ayudarte con productos, ventas, stock, búsquedas o el acceso al sistema. ¿Sobre cuál querés saber?', 'bot');
+  }
+
+  function setPanelOpen(isOpen) {
+    panel.hidden = !isOpen;
+    toggle.setAttribute('aria-expanded', String(isOpen));
+    if (isOpen) input.focus();
+  }
+
+  toggle.addEventListener('click', () => setPanelOpen(panel.hidden));
+  close.addEventListener('click', () => setPanelOpen(false));
+
+  document.querySelectorAll('[data-bot-topic]').forEach(button => {
+    button.addEventListener('click', () => {
+      const question = button.textContent.trim();
+      addMessage(question, 'user');
+      answerQuestion(button.dataset.botTopic, question);
+    });
+  });
+
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    const question = input.value.trim();
+    if (!question) return;
+    addMessage(question, 'user');
+    answerQuestion(null, question);
+    input.value = '';
+  });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !panel.hidden) setPanelOpen(false);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initStockBot);

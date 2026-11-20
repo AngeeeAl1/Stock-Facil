@@ -486,6 +486,59 @@
   </div>
 </div>
 
+<!-- MODAL: ACTUALIZAR STOCK -->
+<div class="modal" id="modal-editStock">
+  <div class="modal__content">
+    <div class="modal__header">Actualizar stock</div>
+    <form id="form-stock">
+      <div class="form-group">
+        <label>Producto</label>
+        <p id="stock-edit-product"></p>
+      </div>
+      <div class="form-group">
+        <label for="stock-edit-quantity">Nueva cantidad</label>
+        <input id="stock-edit-quantity" type="number" min="0" step="1" required>
+      </div>
+      <div class="modal__buttons">
+        <button type="submit" class="btn-save">Guardar</button>
+        <button type="button" class="btn-cancel" onclick="closeModal('editStock')">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ASISTENTE DE AYUDA -->
+<section class="stock-bot" aria-label="Asistente de Stock Fácil">
+  <div class="stock-bot__panel" id="stock-bot-panel" aria-labelledby="stock-bot-title" hidden>
+    <header class="stock-bot__header">
+      <div>
+        <h2 id="stock-bot-title">Ayuda Stock Fácil</h2>
+        <p>Asistente del sistema</p>
+      </div>
+      <button class="stock-bot__close" id="stock-bot-close" type="button" aria-label="Cerrar asistente">×</button>
+    </header>
+    <div class="stock-bot__messages" id="stock-bot-messages" aria-live="polite" aria-relevant="additions">
+      <p class="stock-bot__message stock-bot__message--bot">¡Hola! Puedo ayudarte con las funciones de Stock Fácil. Elegí una consulta o escribí tu pregunta.</p>
+    </div>
+    <div class="stock-bot__quick-questions" aria-label="Preguntas frecuentes">
+      <button type="button" data-bot-topic="producto">Agregar producto</button>
+      <button type="button" data-bot-topic="venta">Registrar venta</button>
+      <button type="button" data-bot-topic="stock">Controlar stock</button>
+      <button type="button" data-bot-topic="buscar">Buscar productos</button>
+      <button type="button" data-bot-topic="acceso">Acceso al sistema</button>
+      <button type="button" data-bot-topic="ayuda">¿Qué puedo hacer?</button>
+    </div>
+    <form class="stock-bot__form" id="stock-bot-form">
+      <label class="visually-hidden" for="stock-bot-input">Escribí tu consulta</label>
+      <input id="stock-bot-input" type="text" placeholder="Escribí tu consulta..." autocomplete="off">
+      <button type="submit" aria-label="Enviar consulta">Enviar</button>
+    </form>
+  </div>
+  <button class="stock-bot__toggle" id="stock-bot-toggle" type="button" aria-expanded="false" aria-controls="stock-bot-panel">
+    <span aria-hidden="true">?</span> Ayuda
+  </button>
+</section>
+
 <script src="script.js"></script>
 </body>
 </html>
